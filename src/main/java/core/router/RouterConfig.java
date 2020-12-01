@@ -23,10 +23,6 @@ public class RouterConfig {
 
     private static Logger log = LoggerFactory.getLogger(PersonHandler.class);
 
-//    private final String HEADER = "Authorization";
-//    private final String PREFIX = "Bearer ";
-//    private final String SECRET = "*S3cret*";
-
     @Autowired
     private Environment env;
 
@@ -38,27 +34,17 @@ public class RouterConfig {
                                 .GET("/{name}", personHandler::findOne)
                                 .GET("", personHandler::findAll)
                         .POST("", personHandler::create)))
-//                        .PUT("/{username}", clientHandler::update)
-//                        .DELETE("/{username}", clientHandler::delete))
 
                 .filter((req, next) -> {
-                    // log.info("toy en el request: "+ req.headers());
                     ServerRequest newRequest = req;
-//                    if (handleRequest(newRequest) == false)
-//                        return ServerResponse.status(HttpStatus.valueOf(401)).build();
+
                     return next.handle(req);
-                    // if (hasToken(req.headers())) {
-                    //         return next.handle(req);
-                    // }
-                    // else {
-                    //         return ServerResponse.status(HttpStatus.FORBIDDEN).build();
-                    // }
+
                 })
                 .after((ServerRequest request, ServerResponse response) -> {
                     log.info("RESPONSE");
                     log.info("status: " + response.statusCode());
                     log.info("headers: " + response.headers());
-                   // log.info("ID aws: " + GlobalConst.awsID);
                     return response;
                 })
                 .build();

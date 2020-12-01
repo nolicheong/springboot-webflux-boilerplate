@@ -35,7 +35,7 @@ public class RouterConfig {
         return route()
                 .path("/clients", router -> router
                         .nest(accept(MediaType.APPLICATION_JSON), r -> r
-                                //.GET("/{username}", personHandler::findOne)
+                                .GET("/{name}", personHandler::findOne)
                                 .GET("", personHandler::findAll)
                         .POST("", personHandler::create)))
 //                        .PUT("/{username}", clientHandler::update)

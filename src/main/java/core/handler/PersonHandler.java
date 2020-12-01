@@ -1,11 +1,13 @@
 package core.handler;
 
-import core.model.Person;
+import core.model.User;
 import core.repository.ReactivePersonRepository;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -39,46 +41,39 @@ public class PersonHandler {
     //  */
     public Mono<ServerResponse> findAll(ServerRequest request) {
 
-        Flux<Person> list = personRepository.findAll();
-        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(list, Person.class);
+        Flux<User> list = personRepository.findAll();
+
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(list, User.class);
     }
 
 
     // /**
     //  * GET ITEM
     //  */
-//    public Mono<ServerResponse> findOne(ServerRequest request) {
-//
-//        String username = String.valueOf(request.pathVariable("username"));
-//
-//        Flux<Person> clientMono = personRepository.findByFirstname(username);
-//
-//        Mono<ServerResponse> notFound = ServerResponse.notFound().build();
-//
-//        if (clientMono != null) return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(fromObject(clientMono));
-//        return notFound;
-//    }
+    public Mono<ServerResponse> findOne(ServerRequest request) {
+
+        String name = request.pathVariable("name");
+        Mono<User> cricketerMono = personRepository.findByUsername(name);
+
+        Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+
+        return cricketerMono.flatMap(cricketer ->
+                ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                        .body(fromObject(cricketer)))
+                .switchIfEmpty(notFound);
+    }
 
     // /**
     //  * POST
     //  */
     public Mono<ServerResponse> create(ServerRequest request) {
-        Person bodyData = request.bodyToMono(Person.class).block();
 
-//        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//        String newPassword = passwordEncoder.encode(bodyData.getPassword());
-//        bodyData.setPassword(newPassword);
-
-        try {
-            Mono<Person> newItem = personRepository.save(bodyData);
-
-            return ServerResponse.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(fromObject(newItem));
-        } catch (Exception e) {
-            //TODO: handle exception
-            return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
-
+        Mono<User> bodyData = request.bodyToMono(User.class);
+        return bodyData.flatMap(
+                body ->
+                        ServerResponse.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON)
+                                .body(personRepository.save(body), User.class)
+        );
     }
 
     // /**

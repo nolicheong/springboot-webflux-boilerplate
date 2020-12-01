@@ -61,7 +61,8 @@
 			<version>5.3.4.RELEASE</version>
 		</dependency>
 
-	</dependencies>
+
+    </dependencies>
 
 	<build>
 		<plugins>
